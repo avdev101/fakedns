@@ -8,4 +8,4 @@ RUN go mod download
 
 RUN go get github.com/githubnemo/CompileDaemon
 
-ENTRYPOINT CompileDaemon --build="go build -o ./faker cmd/faker/main.go" --command=./faker
+ENTRYPOINT CompileDaemon --directory="go build -o ./faker cmd/faker/main.go" --command=./faker
