@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  nginx:
+    image: nginx
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./services/nginx/faker.conf:/etc/nginx/conf.d/faker.conf
+  faker:
+    build: .
+    ports:
+      - "8000:8000"

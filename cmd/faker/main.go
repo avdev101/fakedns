@@ -16,6 +16,6 @@ func main() {
 	go consumEvents(c)
 
 	httpServer := web.NewServer(c)
-	httpServer.Start("0.0.0.0", 8080)
+	httpServer.Start("0.0.0.0", 8000)
 
 }
