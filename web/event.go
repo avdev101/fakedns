@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -85,4 +86,12 @@ func (e Event) PrintLog() {
 	}
 
 	log.WithFields(fields).Info("[http]")
+}
+
+func (e Event) GetJson() string {
+	data, err := json.Marshal(&e)
+	if err != nil {
+		return ""
+	}
+	return string(data)
 }
