@@ -1,6 +1,8 @@
 package web
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -20,6 +22,7 @@ type Event struct {
 	Query     url.Values
 	Method    string
 	UserAgent string
+	Body      string
 }
 
 // NewEvent creates new event from http request
@@ -33,7 +36,19 @@ func NewEvent(r *http.Request) Event {
 	e.RawQuery = r.URL.RawQuery
 	e.Query = r.URL.Query()
 	e.UserAgent = r.UserAgent()
+	e.Body = getBody(r)
+
 	return e
+}
+
+func getBody(r *http.Request) string {
+	body, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		return fmt.Sprintf("can't read body: %v", err)
+	}
+
+	return string(body)
 }
 
 func getPort(r *http.Request) string {
@@ -66,6 +81,7 @@ func (e Event) PrintLog() {
 		"path":      e.Path,
 		"query":     e.RawQuery,
 		"UserAgent": e.UserAgent,
+		"Body":      e.Body,
 	}
 
 	log.WithFields(fields).Info("[http]")
