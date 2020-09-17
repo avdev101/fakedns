@@ -25,14 +25,14 @@ func CreateEvent(r *http.Request) Event {
 }
 
 // DefaultHandler is for handle default http requests
-func (s *Server) DefaultHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	event := NewEvent(r)
 	s.events <- event
 }
 
 // Start new server
-func (s *Server) Start(host, port int) {
-	http.HandleFunc("/", s.DefaultHandler)
+func (s *Server) Start(host string, port int) {
+	http.HandleFunc("/", s.defaultHandler)
 
 	addr := fmt.Sprintf("%v:%v", host, port)
 	http.ListenAndServe(addr, nil)
