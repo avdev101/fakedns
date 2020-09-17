@@ -1,10 +1,15 @@
 package web
 
 import (
-	"log"
 	"net/http"
 	"net/url"
+
+	log "github.com/sirupsen/logrus"
 )
+
+func init() {
+	log.SetFormatter(&log.JSONFormatter{})
+}
 
 // Event store http event details
 type Event struct {
@@ -13,12 +18,14 @@ type Event struct {
 	Host     string
 	RawQuery string
 	Query    url.Values
+	Method   string
 }
 
 // NewEvent creates new event from http request
 func NewEvent(r *http.Request) Event {
 	var e Event
 
+	e.Method = r.Method
 	e.Port = getPort(r)
 	e.Path = r.URL.Path
 	e.Host = getHost(r)
@@ -38,5 +45,14 @@ func getHost(r *http.Request) string {
 
 // PrintLog prints event info
 func (e Event) PrintLog() {
-	log.Printf("request")
+
+	fields := log.Fields{
+		"method": e.Method,
+		"host":   e.Host,
+		"port":   e.Port,
+		"path":   e.Path,
+		"query":  e.RawQuery,
+	}
+
+	log.WithFields(fields).Info("[http]")
 }
