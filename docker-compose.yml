@@ -4,9 +4,12 @@ services:
     image: nginx
     ports:
       - "8080:8080"
+      - "8090:8090"
     volumes:
       - ./services/nginx/faker.conf:/etc/nginx/conf.d/faker.conf
   faker:
     build: .
     ports:
       - "8000:8000"
+    volumes:
+      - "./:/app"
