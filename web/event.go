@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	log.SetFormatter(&log.JSONFormatter{})
+	//log.SetFormatter(&log.JSONFormatter{})
 }
 
 // Event store http event details
