@@ -20,19 +20,23 @@ var upgrader = websocket.Upgrader{
 
 // Server is a web server
 type Server struct {
-	events chan core.Event
+	events        chan core.Event
+	eventsStream  chan core.Event
+	wsConnections []*websocket.Conn
 }
 
 // NewServer creates new web server
-func NewServer(events chan core.Event) Server {
-	return Server{events: events}
+func NewServer(eventsStream chan core.Event) Server {
+	return Server{
+		events:        make(chan core.Event),
+		eventsStream:  eventsStream,
+		wsConnections: make([]*websocket.Conn, 0),
+	}
 }
 
-// CreateEvent creates Event from http request
-func CreateEvent(r *http.Request) Event {
-	var e Event
-
-	return e
+// Events returns events channel
+func (s *Server) Events() chan core.Event {
+	return s.events
 }
 
 // DefaultHandler is for handle default http requests
@@ -48,16 +52,25 @@ func (s *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for event := range s.events {
-		err := conn.WriteJSON(&event)
-		if err != nil {
-			log.Printf("can't write json: %v", err)
-		}
-	}
+	s.wsConnections = append(s.wsConnections, conn)
 }
 
 func (s *Server) logHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "assets/ws.html")
+}
+
+func (s *Server) handleEvents() {
+	for event := range s.eventsStream {
+
+		for _, conn := range s.wsConnections {
+
+			err := conn.WriteJSON(&event)
+
+			if err != nil {
+				log.Printf("can't write json: %v", err)
+			}
+		}
+	}
 }
 
 // Start new server
@@ -67,5 +80,8 @@ func (s *Server) Start(host string, port int) {
 	http.HandleFunc("/", s.defaultHandler)
 
 	addr := fmt.Sprintf("%v:%v", host, port)
+
+	go s.handleEvents()
+
 	http.ListenAndServe(addr, nil)
 }

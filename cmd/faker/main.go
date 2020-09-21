@@ -12,10 +12,19 @@ func consumEvents(c chan core.Event) {
 }
 
 func main() {
-	c := make(chan core.Event)
-	go consumEvents(c)
+	eventsStream := make(chan core.Event)
 
-	httpServer := web.NewServer(c)
+	httpServer := web.NewServer(eventsStream)
+
+	serverEvents := httpServer.Events()
+
+	go func() {
+		for event := range serverEvents {
+			event.PrintLog()
+			eventsStream <- event
+		}
+	}()
+
 	httpServer.Start("0.0.0.0", 8000)
 
 }
