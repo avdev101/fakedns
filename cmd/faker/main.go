@@ -3,28 +3,30 @@ package main
 import (
 	"github.com/eremeevdev/faker/core"
 	"github.com/eremeevdev/faker/web"
+	"github.com/eremeevdev/faker/xdns"
 )
-
-func consumEvents(c chan core.Event) {
-	for event := range c {
-		event.PrintLog()
-	}
-}
 
 func main() {
 	eventsStream := make(chan core.Event)
 
 	httpServer := web.NewServer(eventsStream)
-
-	serverEvents := httpServer.Events()
+	dnsServer := xdns.NewServer()
 
 	go func() {
-		for event := range serverEvents {
+		for event := range dnsServer.Events() {
 			event.PrintLog()
 			eventsStream <- event
 		}
 	}()
 
-	httpServer.Start("0.0.0.0", 8000)
+	go func() {
+		for event := range httpServer.Events() {
+			event.PrintLog()
+			eventsStream <- event
+		}
+	}()
 
+	go dnsServer.Start()
+
+	httpServer.Start("0.0.0.0", 8000)
 }
