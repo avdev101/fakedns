@@ -27,18 +27,27 @@ func (s *Server) notify(msg *dns.Msg) {
 
 }
 
-func (s *Server) getAnswer(msg *dns.Msg) []dns.RR {
-	answer := make([]dns.RR, 0)
-
+func (s *Server) getAAnswer(q dns.Question) dns.RR {
 	addr := "192.168.0.1-192.168.1.1-s123.asdf.ru"
 	rr, err := dns.NewRR(fmt.Sprintf("%v A %v", addr, "123.123.123.123"))
+
 	rr.Header().Ttl = 1
 
 	if err != nil {
 		log.Fatal("could not parse APAIR record: ", err)
 	}
 
-	answer = append(answer, rr)
+	return rr
+}
+
+func (s *Server) getAnswer(msg *dns.Msg) []dns.RR {
+	answer := make([]dns.RR, 0)
+
+	for _, q := range msg.Question {
+		if q.Qtype == dns.TypeA {
+			answer = append(answer, s.getAAnswer(q))
+		}
+	}
 
 	return answer
 }
