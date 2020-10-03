@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/eremeevdev/faker/core"
 	"github.com/miekg/dns"
-	"log"
 )
 
 type Server struct {
@@ -27,17 +26,22 @@ func (s *Server) notify(msg *dns.Msg) {
 
 }
 
-func (s *Server) getAAnswer(q dns.Question) dns.RR {
-	addr := "192.168.0.1-192.168.1.1-s123.asdf.ru"
-	rr, err := dns.NewRR(fmt.Sprintf("%v A %v", addr, "123.123.123.123"))
+func (s *Server) getAAnswer(q dns.Question) []dns.RR {
 
-	rr.Header().Ttl = 1
+	ips := getIps(q.Name)
 
-	if err != nil {
-		log.Fatal("could not parse APAIR record: ", err)
+	result := make([]dns.RR, len(ips))
+
+	for i, ip := range ips {
+		rr, err := dns.NewRR(fmt.Sprintf("%v A %v", q.Name, ip))
+		if err != nil {
+			panic(err)
+		}
+		rr.Header().Ttl = 1
+		result[i] = rr
 	}
 
-	return rr
+	return result
 }
 
 func (s *Server) getAnswer(msg *dns.Msg) []dns.RR {
@@ -45,7 +49,9 @@ func (s *Server) getAnswer(msg *dns.Msg) []dns.RR {
 
 	for _, q := range msg.Question {
 		if q.Qtype == dns.TypeA {
-			answer = append(answer, s.getAAnswer(q))
+			for _, ans := range s.getAAnswer(q) {
+				answer = append(answer, ans)
+			}
 		}
 	}
 
