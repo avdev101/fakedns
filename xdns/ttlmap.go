@@ -15,6 +15,7 @@ type TTLMap struct {
 func NewTTLMap(interval time.Duration) TTLMap {
 	return TTLMap{
 		interval: interval,
+		data:     make(map[string]Value),
 	}
 }
 
