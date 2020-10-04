@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"github.com/eremeevdev/faker/core"
 	"github.com/miekg/dns"
+	"time"
 )
 
 type Server struct {
 	events chan core.Event
+	ttlmap TTLMap
 }
 
 func NewServer() Server {
 	return Server{
 		events: make(chan core.Event),
+		ttlmap: NewTTLMap(5 * time.Second),
 	}
 }
 
