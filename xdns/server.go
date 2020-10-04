@@ -26,14 +26,11 @@ func (s *Server) notify(msg *dns.Msg) {
 
 }
 
-func (s *Server) getAAnswer(q dns.Question) []dns.RR {
-
-	ips := getIps(q.Name)
-
+func (s *Server) getSimpleAAnswer(ips []string, name string) []dns.RR {
 	result := make([]dns.RR, len(ips))
 
 	for i, ip := range ips {
-		rr, err := dns.NewRR(fmt.Sprintf("%v A %v", q.Name, ip))
+		rr, err := dns.NewRR(fmt.Sprintf("%v A %v", name, ip))
 		if err != nil {
 			panic(err)
 		}
@@ -42,6 +39,23 @@ func (s *Server) getAAnswer(q dns.Question) []dns.RR {
 	}
 
 	return result
+}
+
+func (s *Server) getSchemeAAnswer(ips []string, scheme []int, name string) []dns.RR {
+	result := make([]dns.RR, 1)
+	return result
+}
+
+func (s *Server) getAAnswer(q dns.Question) []dns.RR {
+
+	ips := getIps(q.Name)
+	scheme := getScheme(q.Name)
+
+	if len(scheme) != 0 {
+		return s.getSchemeAAnswer(ips, scheme, q.Name)
+	}
+
+	return s.getSimpleAAnswer(ips, q.Name)
 }
 
 func (s *Server) getAnswer(msg *dns.Msg) []dns.RR {
