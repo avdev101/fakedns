@@ -29,16 +29,23 @@ func (s *Server) notify(msg *dns.Msg) {
 
 }
 
+func (s *Server) createA(ip string, name string) dns.RR {
+	rr, err := dns.NewRR(fmt.Sprintf("%v A %v", name, ip))
+
+	if err != nil {
+		panic(err)
+	}
+
+	rr.Header().Ttl = 1
+
+	return rr
+}
+
 func (s *Server) getSimpleAAnswer(ips []string, name string) []dns.RR {
 	result := make([]dns.RR, len(ips))
 
 	for i, ip := range ips {
-		rr, err := dns.NewRR(fmt.Sprintf("%v A %v", name, ip))
-		if err != nil {
-			panic(err)
-		}
-		rr.Header().Ttl = 1
-		result[i] = rr
+		result[i] = s.createA(ip, name)
 	}
 
 	return result
@@ -46,6 +53,20 @@ func (s *Server) getSimpleAAnswer(ips []string, name string) []dns.RR {
 
 func (s *Server) getSchemeAAnswer(ips []string, scheme []int, name string) []dns.RR {
 	result := make([]dns.RR, 1)
+
+	count := s.ttlmap.Get(name)
+	position := scheme[count]
+	ip := ips[position]
+	result[0] = s.createA(ip, name)
+
+	nextCount := count + 1
+
+	if nextCount == len(scheme) {
+		nextCount = 0
+	}
+
+	s.ttlmap.Set(name, nextCount)
+
 	return result
 }
 
