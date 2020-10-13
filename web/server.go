@@ -83,5 +83,5 @@ func (s *Server) Start(host string, port int) {
 
 	go s.handleEvents()
 
-	http.ListenAndServe(addr, nil)
+	log.Fatal(http.ListenAndServe(addr, nil))
 }
