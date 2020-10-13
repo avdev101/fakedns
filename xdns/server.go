@@ -98,14 +98,14 @@ func (s *Server) getAnswer(msg *dns.Msg) []dns.RR {
 
 func (s *Server) defaultHandler(w dns.ResponseWriter, r *dns.Msg) {
 
-	s.notify(r)
-
 	m := new(dns.Msg)
 	m.SetReply(r)
 
 	for _, answer := range s.getAnswer(r) {
 		m.Answer = append(m.Answer, answer)
 	}
+
+	s.notify(m)
 
 	w.WriteMsg(m)
 }
