@@ -14,6 +14,7 @@ func getConfig() core.Config {
 
 	flag.Int64Var(&conf.Port, "port", 8000, "port for web server")
 	flag.StringVar(&conf.ForceIP, "forceip", "", "force ip addr to use")
+	flag.IntVar(&conf.TTL, "ttl", 5, "ttl for scheme")
 
 	flag.Parse()
 

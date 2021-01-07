@@ -18,7 +18,7 @@ func NewServer(config core.Config) Server {
 	return Server{
 		config: config,
 		events: make(chan core.Event),
-		ttlmap: NewTTLMap(5 * time.Second),
+		ttlmap: NewTTLMap(time.Duration(config.TTL) * time.Second),
 	}
 }
 
