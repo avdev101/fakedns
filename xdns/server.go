@@ -2,18 +2,21 @@ package xdns
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/eremeevdev/faker/core"
 	"github.com/miekg/dns"
-	"time"
 )
 
 type Server struct {
+	config core.Config
 	events chan core.Event
 	ttlmap TTLMap
 }
 
-func NewServer() Server {
+func NewServer(config core.Config) Server {
 	return Server{
+		config: config,
 		events: make(chan core.Event),
 		ttlmap: NewTTLMap(5 * time.Second),
 	}
@@ -36,7 +39,7 @@ func (s *Server) createA(ip string, name string) dns.RR {
 		panic(err)
 	}
 
-	rr.Header().Ttl = 1
+	rr.Header().Ttl = 0
 
 	return rr
 }
@@ -72,7 +75,14 @@ func (s *Server) getSchemeAAnswer(ips []string, scheme []int, name string) []dns
 
 func (s *Server) getAAnswer(q dns.Question) []dns.RR {
 
-	ips := getIps(q.Name)
+	var ips []string
+
+	if s.config.ForceIP == "" {
+		ips = getIps(q.Name)
+	} else {
+		ips = []string{s.config.ForceIP}
+	}
+
 	scheme := getScheme(q.Name)
 
 	if len(scheme) != 0 {
